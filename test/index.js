@@ -14,13 +14,17 @@ module.exports = df.orchestrator(function* (context) {
   let data = context.df.getInput();
   data = JSON.parse(data);
 
-  let {dataAddress, hub} = data;
+  let {dataAddress, hub, sessionId} = data;
   while (dataAddress.length) {
     const deadline = DateTime.fromJSDate(context.df.currentUtcDateTime, {
       zone: "utc",
     }).plus({seconds: 5});
     yield context.df.createTimer(deadline.toJSDate());
-    let trigger = yield context.df.callActivity("JOB", {dataAddress, hub});
+    let trigger = yield context.df.callActivity("JOB", {
+      dataAddress,
+      hub,
+      sessionId,
+    });
     dataAddress = trigger.dataAddress;
     if (trigger.status === "JOB_DONE") break;
   }
